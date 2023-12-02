@@ -11,6 +11,8 @@ internal class Year2021Day04 : IPuzzle
 
     public object FirstPart()
     {
+        ReadInput();
+
         var queue = new Queue<int>(_numbers);
 
         while (queue.TryDequeue(out int n))
@@ -31,9 +33,7 @@ internal class Year2021Day04 : IPuzzle
 
     public void ReadInput()
     {
-        string input = File.ReadAllText("Input/04.txt");
-
-        using var reader = new StringReader(input ?? throw new InvalidOperationException("Input is not initialized"));
+        using var reader = InputReader.OpenStreamReader(this);
 
         string firstLine = reader.ReadLine() ?? throw new InvalidOperationException("Invalid input");
         _numbers.AddRange(GetNumbers(firstLine));

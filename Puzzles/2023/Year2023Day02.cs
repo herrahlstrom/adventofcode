@@ -1,8 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
 using AdventOfCode.Helper;
-using System.Text.RegularExpressions;
-using System.Transactions;
-using System;
 
 namespace AdventOfCode.Puzzles;
 
@@ -37,12 +34,16 @@ public class Year2023Day02 : IPuzzle
     private static void UpdateCube(ref GameSet gameSet, ReadOnlySpan<char> cubeSpan)
     {
         int p = cubeSpan.IndexOf(' ');
-        gameSet = cubeSpan[(p + 1)..] switch
+
+        var color = cubeSpan[(p + 1)..];
+        int count = int.Parse(cubeSpan[..p]);
+
+        gameSet = color switch
         {
-            "red" => gameSet with { Red = int.Parse(cubeSpan[..p]) },
-            "green" => gameSet with { Green = int.Parse(cubeSpan[..p]) },
-            "blue" => gameSet with { Blue = int.Parse(cubeSpan[..p]) },
-            _ => throw new Exception("ööh"),
+            "red" => gameSet with { Red = count },
+            "green" => gameSet with { Green = count },
+            "blue" => gameSet with { Blue = count },
+            _ => throw new NotSupportedException(),
         };
     }
 

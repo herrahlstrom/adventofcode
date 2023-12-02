@@ -5,7 +5,7 @@ using AdventOfCode;
 using AdventOfCode.Helper;
 using ConsoleTables;
 
-var resultTable = new ConsoleTable("PUZZLE", "FIRST", "SECOND", "ELAPSED");
+var resultTable = new ConsoleTable("   PUZZLE", "      FIRST", "     SECOND", "  ELAPSED");
 
 var arguments = new CommandLine.Parser().ParseArguments<Arguments>(args);
 foreach(var argError in arguments.Errors)
@@ -15,7 +15,7 @@ foreach(var argError in arguments.Errors)
 
 foreach (IPuzzle day in GetPuzzles(arguments.Value))
 {
-    Stopwatch sw = Stopwatch.StartNew();
+    var start = Stopwatch.GetTimestamp();
 
     object firstResult;
     try
@@ -33,15 +33,15 @@ foreach (IPuzzle day in GetPuzzles(arguments.Value))
     catch (NotImplementedException)
     { secondResult = ""; }
 
-    sw.Stop();
-
+    var elapsedTime = Stopwatch.GetElapsedTime(start);
+    
     PuzzleAttribute puzzleAttribute = day.GetType().GetCustomAttribute<PuzzleAttribute>()!;
 
     resultTable.AddRow(
         $"{puzzleAttribute.Day,2} {puzzleAttribute.Name}",
         $"{firstResult,11}",
         $"{secondResult,11}",
-        $"{sw.ElapsedMilliseconds,4} ms");
+        $"{elapsedTime.TotalMilliseconds,6:N1} ms");
 }
 
 resultTable.Write();
