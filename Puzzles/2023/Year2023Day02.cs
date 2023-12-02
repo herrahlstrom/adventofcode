@@ -1,0 +1,101 @@
+﻿using System.Drawing;
+using AdventOfCode.Helper;
+using System.Text.RegularExpressions;
+using System.Transactions;
+using System;
+
+namespace AdventOfCode.Puzzles;
+
+[Puzzle(2023, 2, "Cube Conundrum")]
+public class Year2023Day02 : IPuzzle
+{
+    public object FirstPart()
+    {
+        const int MaxRed = 12;
+        const int MaxGreen = 13;
+        const int MaxBlue = 14;
+
+        return InputReader.ReadLines(this)
+                          .Select(ReadGame)
+                          .Where(game => game.Sets.All(x => x.Red <= MaxRed && x.Green <= MaxGreen && x.Blue <= MaxBlue))
+                          .Sum(game => game.Id);
+    }
+
+    public object SecondPart()
+    {
+        long sum = 0;
+        foreach (var game in InputReader.ReadLines(this).Select(ReadGame))
+        {
+            int red = game.Sets.Max(x => x.Red);
+            int green = game.Sets.Max(x => x.Green);
+            int blue = game.Sets.Max(x => x.Blue);
+            sum += red * green * blue;
+        }
+        return sum;
+    }
+
+    private static void UpdateCube(ref GameSet gameSet, ReadOnlySpan<char> cubeSpan)
+    {
+        int p = cubeSpan.IndexOf(' ');
+        gameSet = cubeSpan[(p + 1)..] switch
+        {
+            "red" => gameSet with { Red = int.Parse(cubeSpan[..p]) },
+            "green" => gameSet with { Green = int.Parse(cubeSpan[..p]) },
+            "blue" => gameSet with { Blue = int.Parse(cubeSpan[..p]) },
+            _ => throw new Exception("ööh"),
+        };
+    }
+
+    private Game ReadGame(string line)
+    {
+        ReadOnlySpan<char> span = line.AsSpan();
+        int p = span.IndexOf(':');
+
+        return new Game(
+            Id: int.Parse(span[5..p]),
+            Sets: ReadGameData(span[(p + 2)..]));
+    }
+
+    private List<GameSet> ReadGameData(ReadOnlySpan<char> span)
+    {
+        var gameSets = new List<GameSet>();
+
+        int a = 0;
+        int b = 0;
+        while (++b < span.Length)
+        {
+            if (span[b] == ';')
+            {
+                gameSets.Add(ReadGameSet(span[a..b]));
+                a = b + 2;
+            }
+        }
+
+        gameSets.Add(ReadGameSet(span[a..]));
+        return gameSets;
+    }
+
+    private GameSet ReadGameSet(ReadOnlySpan<char> span)
+    {
+        var gameSet = new GameSet(0, 0, 0);
+
+        int a = 0;
+        int b = 0;
+
+        while (++b < span.Length)
+        {
+            if (span[b] == ',')
+            {
+                UpdateCube(ref gameSet, span[a..b]);
+                a = b + 2;
+            }
+        }
+
+        UpdateCube(ref gameSet, span[a..b]);
+
+        return gameSet;
+    }
+
+    record Game(int Id, IList<GameSet> Sets);
+    record GameSet(int Red, int Green, int Blue);
+}
