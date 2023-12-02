@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace AdventOfCode.Helper;
+namespace AdventOfCode;
 
 internal class PuzzleAttribute : Attribute
 {
@@ -17,4 +17,6 @@ internal class PuzzleAttribute : Attribute
     public int Day { get; }
 
     public string Name { get; set; }
+
+    public bool PrintToConsole { get; set; }
 }

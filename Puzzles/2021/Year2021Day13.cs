@@ -1,11 +1,10 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.RegularExpressions;
 using AdventOfCode.Helper;
 
 namespace AdventOfCode.Puzzles;
 
-[Puzzle(2021, 13, "Transparent Origami")]
+[Puzzle(2021, 13, "Transparent Origami", PrintToConsole = true)]
 internal class Year2021Day13 : IPuzzle
 {
     private readonly List<FoldInstruction> _foldInstructions = new();
