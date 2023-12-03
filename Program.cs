@@ -45,10 +45,21 @@ public class Program
                        where puzzle != null
                        select new { puzzle.Year, puzzle.Day, PuzzleType = t }).ToList();
 
-        int year = arguments.Year ?? puzzles.Max(x => x.Year);
-
+        int year;
+        int? day;
+        if(arguments.Latest)
+        {
+            year = puzzles.Max(x => x.Year);
+            day = puzzles.Where(x => x.Year == year).Max(x => x.Day);
+        }
+        else
+        {
+            year = arguments.Year ?? puzzles.Max(x => x.Year);
+            day = arguments.Day;
+        }
+    
         return puzzles.Where(x => x.Year == year)
-                      .Where(x => arguments.Day == null || x.Day == arguments.Day)
+                      .Where(x => day == null || x.Day == day)
                       .Select(x => x.PuzzleType)
                       .Select(Activator.CreateInstance)
                       .OfType<IPuzzle>();

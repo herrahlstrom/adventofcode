@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "adventofcode": {
+      "commandName": "Project",
+      "commandLineArgs": "--latest"
+    }
+  }
+}

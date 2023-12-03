@@ -9,4 +9,8 @@ internal class Arguments
     
     [Option('d', "day")]
     public int? Day { get; set; }
+
+    [Option("latest")]
+    public bool Latest { get; set; }
+
 }

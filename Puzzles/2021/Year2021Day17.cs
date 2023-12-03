@@ -148,11 +148,7 @@ internal class Year2021Day17 : IPuzzle
 
         public void Step()
         {
-            var velocityDelta = new Point
-            {
-                X = -Math.Sign(Velocity.X),
-                Y = -1
-            };
+            var velocityDelta = new Point(-Math.Sign(Velocity.X), -1);
 
             Position += Velocity;
             Velocity += velocityDelta;

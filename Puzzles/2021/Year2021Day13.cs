@@ -42,11 +42,7 @@ internal class Year2021Day13 : IPuzzle
             string[] arr = line.Split(',');
             int x = int.Parse(arr[0]);
             int y = int.Parse(arr[1]);
-            _points.Add(new Point
-            {
-                X = x,
-                Y = y
-            });
+            _points.Add(new Point(x, y));
 
             if (x > _end.X || y > _end.Y)
             {

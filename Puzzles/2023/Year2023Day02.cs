@@ -31,22 +31,6 @@ public class Year2023Day02 : IPuzzle
         return sum;
     }
 
-    private static void UpdateCube(ref GameSet gameSet, ReadOnlySpan<char> cubeSpan)
-    {
-        int p = cubeSpan.IndexOf(' ');
-
-        var color = cubeSpan[(p + 1)..];
-        int count = int.Parse(cubeSpan[..p]);
-
-        gameSet = color switch
-        {
-            "red" => gameSet with { Red = count },
-            "green" => gameSet with { Green = count },
-            "blue" => gameSet with { Blue = count },
-            _ => throw new NotSupportedException(),
-        };
-    }
-
     private Game ReadGame(string line)
     {
         ReadOnlySpan<char> span = line.AsSpan();
@@ -69,6 +53,7 @@ public class Year2023Day02 : IPuzzle
             {
                 gameSets.Add(ReadGameSet(span[a..b]));
                 a = b + 2;
+                b = a;
             }
         }
 
@@ -83,18 +68,35 @@ public class Year2023Day02 : IPuzzle
         int a = 0;
         int b = 0;
 
-        while (++b < span.Length)
+        while(++b < span.Length)
         {
-            if (span[b] == ',')
+            if(span[b] == ',')
             {
-                UpdateCube(ref gameSet, span[a..b]);
+                UpdateCube(span[a..b]);
                 a = b + 2;
+                b = a;
             }
         }
 
-        UpdateCube(ref gameSet, span[a..b]);
+        UpdateCube(span[a..b]);
 
         return gameSet;
+
+        void UpdateCube(ReadOnlySpan<char> cubeSpan)
+        {
+            int p = cubeSpan.IndexOf(' ');
+
+            var color = cubeSpan[(p + 1)..];
+            int count = int.Parse(cubeSpan[..p]);
+
+            gameSet = color switch
+            {
+                "red" => gameSet with { Red = count },
+                "green" => gameSet with { Green = count },
+                "blue" => gameSet with { Blue = count },
+                _ => throw new NotSupportedException(),
+            };
+        }
     }
 
     record Game(int Id, IList<GameSet> Sets);
