@@ -1,6 +1,10 @@
 {
   "profiles": {
-    "adventofcode": {
+    "default": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    },
+    "latest-puzzle": {
       "commandName": "Project",
       "commandLineArgs": "--latest"
     }
