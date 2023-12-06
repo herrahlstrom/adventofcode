@@ -5,6 +5,7 @@ namespace AdventOfCode.Puzzles
    [Puzzle(2023, 4, "Scratchcards")]
    public class Year2023Day04 : IPuzzle
    {
+      [Answer(25010)]
       public object FirstPart()
       {
          return InputReader.ReadLines(this)
@@ -13,6 +14,7 @@ namespace AdventOfCode.Puzzles
                            .Sum();
       }
 
+      [Answer(9924412)]
       public object SecondPart()
       {
          Dictionary<int, int> extraCards = [];
