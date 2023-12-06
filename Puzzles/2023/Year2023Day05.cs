@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using AdventOfCode.Helper;
 
@@ -9,9 +7,6 @@ namespace AdventOfCode.Puzzles
    [Puzzle(2023, 5, "If You Give A Seed A Fertilizer")]
    public partial class Year2023Day05 : IPuzzle
    {
-      const string FirstStep = "seed";
-      const string LastStep = "location";
-
       [Answer(51580674L)]
       public object FirstPart()
       {
@@ -28,69 +23,23 @@ namespace AdventOfCode.Puzzles
          return SimpleSolution(seeds, maps);
       }
 
+      [Answer(99751240)]
       public object SecondPart()
       {
          IEnumerator<string> lineEnumerator = InputReader.ReadLines(this).GetEnumerator();
 
          lineEnumerator.MoveNext();
-         List<SeedEntry> seeds = new(10);
+         List<ValueRange> seeds = new(10);
          var arr = lineEnumerator.Current[7..].Split();
          for (int i = 0; i < arr.Length; i += 2)
          {
-            seeds.Add(new SeedEntry(long.Parse(arr[i]), int.Parse(arr[i + 1])));
+            seeds.Add(new ValueRange(long.Parse(arr[i]), long.Parse(arr[i]) + int.Parse(arr[i + 1])));
          }
 
          lineEnumerator.MoveNext();
          List<Map> maps = ReadMaps(lineEnumerator).ToList();
 
-         return ImprovedSolution(seeds, maps);
-      }
-
-      private static long ImprovedSolution(List<SeedEntry> seeds, List<Map> maps)
-      {
-         long max = maps[^1].MapData.Select(x => x.Destination + x.Lenght).Max();
-         float nextPrint = 0.001f;
-         bool hasResult = false;
-         ConcurrentBag<long> result = [];
-
-         const int blockSize = 100;
-
-         for (int i = 0; i < max; i+= blockSize)
-         {
-            var p = (float)i/max;
-            if(p>= nextPrint)
-            {
-               Console.WriteLine("{0:P1}", p);
-               nextPrint += 0.001f;
-            }
-
-            Parallel.For(
-               i,
-               i + blockSize,
-               blockStart =>
-               {
-                  long value = blockStart;
-
-                  for(int j = maps.Count - 1; j >= 0; j--)
-                  {
-                     value = maps[j].GetRevNumber(value);
-                  }
-                  foreach(var seedEntry in seeds)
-                  {
-                     if(seedEntry.Contains(value))
-                     {
-                        hasResult = true;
-                        result.Add(blockStart);
-                     }
-                  }
-               });
-            if (hasResult)
-            {
-               return result.Min(x => x);
-            }
-         }
-
-         throw new UnreachableException();
+         return SplitRangeSolution(seeds, maps);
       }
 
       [GeneratedRegex("^(?<from>.+)-to-(?<to>.+) map:$")]
@@ -124,14 +73,83 @@ namespace AdventOfCode.Puzzles
 
          foreach (var map in maps)
          {
-            buffer.AddRange(numbers.Select(map.GetNumber));
+            buffer.AddRange(numbers.Select(number => Transform(number)));
 
             numbers.Clear();
             numbers.AddRange(buffer);
             buffer.Clear();
+
+            long Transform(long number)
+            {
+               return map.Transformers
+                         .Where(data => number >= data.Range.Start && number <= data.Range.End)
+                         .Select(data => data.Destination - data.Range.Start)
+                         .FirstOrDefault() + number;
+            }
          }
 
          return numbers.Min();
+      }
+
+      private static long SplitRangeSolution(List<ValueRange> seeds, List<Map> maps)
+      {
+         var a = new List<ValueRange>(seeds.Count);
+         var b = new List<ValueRange>(seeds.Count);
+         a.AddRange(seeds);
+
+         foreach (var map in maps)
+         {
+            foreach (var val in a)
+            {
+               List<ValueRange> workingValues = [val];
+               List<ValueRange> buffer = [];
+
+               foreach (var transformer in map.Transformers)
+               {
+                  foreach (var workVal in workingValues)
+                  {
+                     if (workVal.End < transformer.Range.Start || workVal.Start > transformer.Range.End)
+                     {
+                        buffer.Add(workVal);
+                        continue;
+                     }
+
+                     if (workVal.Start < transformer.Range.Start)
+                     {
+                        buffer.Add(new ValueRange(workVal.Start, transformer.Range.Start - 1));
+                     }
+
+                     long crossStart = Math.Max(workVal.Start, transformer.Range.Start);
+                     long crossEnd = Math.Min(workVal.End, transformer.Range.End);
+                     var delta = transformer.Destination - transformer.Range.Start;
+                     b.Add(new ValueRange(crossStart + delta, crossEnd + delta));
+
+                     if (workVal.End > transformer.Range.End)
+                     {
+                        buffer.Add(new ValueRange(transformer.Range.End + 1, workVal.End));
+                     }
+                  }
+
+                  workingValues.Clear();
+                  workingValues.AddRange(buffer);
+                  buffer.Clear();
+
+                  if (workingValues.Count == 0)
+                  {
+                     break;
+                  }
+               }
+
+               // Add the non transformed values
+               b.AddRange(workingValues);
+            }
+
+            a.Clear();
+            a.AddRange(b);
+            b.Clear();
+         }
+
+         return a.Min(x => x.Start);
       }
 
       private Map ReadMap(IEnumerator<string> lineEnumerator)
@@ -142,7 +160,7 @@ namespace AdventOfCode.Puzzles
          while (lineEnumerator.MoveNext() && lineEnumerator.Current.Length > 0)
          {
             var ssv = ReadSSV(lineEnumerator.Current.AsSpan(), 3);
-            map.MapData.Add(new MapData(ssv[1], ssv[0], ssv[2]));
+            map.Transformers.Add(new Transformer(new ValueRange(ssv[1], ssv[1] + ssv[2] - 1), ssv[0]));
          }
 
          return map;
@@ -159,45 +177,12 @@ namespace AdventOfCode.Puzzles
       private class Map(string from, string to)
       {
          public string From { get; } = from;
-         public IList<MapData> MapData { get; } = new List<MapData>();
          public string To { get; } = to;
-
-         public long GetNumber(long number)
-         {
-            foreach (var data in MapData)
-            {
-               if (number >= data.Source && number <= data.Source + data.Lenght)
-               {
-                  return number + (data.Destination - data.Source);
-               }
-            }
-            return number;
-         }
-
-         public long GetRevNumber(long number)
-         {
-            foreach (var data in MapData)
-            {
-               if (number >= data.Destination && number <= data.Destination + data.Lenght)
-               {
-                  return number - (data.Destination - data.Source);
-               }
-            }
-            return number;
-         }
+         public IList<Transformer> Transformers { get; } = new List<Transformer>();
       }
 
-      private class SeedEntry(long source, int count = 1)
-      {
-         public int Count { get; } = count;
-         public long Source { get; } = source;
+      private record struct ValueRange(long Start, long End);
 
-         public bool Contains(long value)
-         {
-            return value >= Source && value < Source + Count;
-         }
-      }
-
-      private record struct MapData(long Source, long Destination, long Lenght);
+      private record struct Transformer(ValueRange Range, long Destination);
    }
 }
