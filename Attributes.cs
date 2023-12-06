@@ -26,7 +26,7 @@ internal class PuzzleAttribute : Attribute
 
    public int Day { get; }
 
-   public string Name { get; set; }
+   public string Name { get; }
 
    public bool PrintToConsole { get; set; }
 
