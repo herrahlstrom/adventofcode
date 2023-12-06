@@ -1,198 +1,203 @@
-﻿using AdventOfCode.Helper;
-using System;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using AdventOfCode.Helper;
 
 namespace AdventOfCode.Puzzles
 {
-    [Puzzle(2023, 5, "If You Give A Seed A Fertilizer")]
-    public partial class Year2023Day05 : IPuzzle
-    {
-        const string FirstStep = "seed";
-        const string LastStep = "location";
+   [Puzzle(2023, 5, "If You Give A Seed A Fertilizer")]
+   public partial class Year2023Day05 : IPuzzle
+   {
+      const string FirstStep = "seed";
+      const string LastStep = "location";
 
-        public object FirstPart()
-        {
-            IEnumerator<string> lineEnumerator = InputReader.ReadLines(this).GetEnumerator();
+      [Answer(51580674L)]
+      public object FirstPart()
+      {
+         IEnumerator<string> lineEnumerator = InputReader.ReadLines(this).GetEnumerator();
 
-            //lineEnumerator.MoveNext();
-            //List<SeedEntry> numbers = lineEnumerator.Current[7..].Split()
-            //                                                     .Select(x => new SeedEntry(long.Parse(x)))
-            //                                                     .ToList();
+         lineEnumerator.MoveNext();
+         List<long> seeds = lineEnumerator.Current[7..].Split()
+                                                       .Select(long.Parse)
+                                                       .ToList();
 
-            //lineEnumerator.MoveNext();
-            //Dictionary<string, Map> maps = ReadMaps(lineEnumerator).ToDictionary(x => x.From, x => x);
+         lineEnumerator.MoveNext();
+         List<Map> maps = ReadMaps(lineEnumerator).ToList();
 
-            //var buffer = new List<long>(numbers.Count);
-            //string step = FirstStep;
-            //while (step != LastStep)
-            //{
-            //    var map = maps[step];
-            //    buffer.AddRange(numbers.Select(map.GetNumber));
+         return SimpleSolution(seeds, maps);
+      }
 
-            //    numbers.Clear();
-            //    numbers.AddRange(buffer);
-            //    buffer.Clear();
+      public object SecondPart()
+      {
+         IEnumerator<string> lineEnumerator = InputReader.ReadLines(this).GetEnumerator();
 
-            //    step = map.To;
-            //}
+         lineEnumerator.MoveNext();
+         List<SeedEntry> seeds = new(10);
+         var arr = lineEnumerator.Current[7..].Split();
+         for (int i = 0; i < arr.Length; i += 2)
+         {
+            seeds.Add(new SeedEntry(long.Parse(arr[i]), int.Parse(arr[i + 1])));
+         }
 
-            //return numbers.Min();
+         lineEnumerator.MoveNext();
+         List<Map> maps = ReadMaps(lineEnumerator).ToList();
 
-            lineEnumerator.MoveNext();
-            List<SeedEntry> seeds = lineEnumerator.Current[7..].Split()
-                                                               .Select(x => new SeedEntry(long.Parse(x)))
-                                                               .ToList();
+         return ImprovedSolution(seeds, maps);
+      }
 
-            lineEnumerator.MoveNext();
-            List<Map> maps = ReadMaps(lineEnumerator).ToList();
+      private static long ImprovedSolution(List<SeedEntry> seeds, List<Map> maps)
+      {
+         long max = maps[^1].MapData.Select(x => x.Destination + x.Lenght).Max();
+         float nextPrint = 0.001f;
+         bool hasResult = false;
+         ConcurrentBag<long> result = [];
 
-            return Calc(seeds, maps);
-        }
+         const int blockSize = 100;
 
-        public object SecondPart()
-        {
-            throw new NotImplementedException();
-            IEnumerator<string> lineEnumerator = InputReader.ReadLines(this).GetEnumerator();
-
-            lineEnumerator.MoveNext();
-            List<SeedEntry> seeds = ReadSeeds(lineEnumerator.Current).ToList();
-
-            lineEnumerator.MoveNext();
-            List<Map> maps = ReadMaps(lineEnumerator).ToList();
-            
-            return Calc(seeds, maps);
-
-            IEnumerable<SeedEntry> ReadSeeds(string line)
+         for (int i = 0; i < max; i+= blockSize)
+         {
+            var p = (float)i/max;
+            if(p>= nextPrint)
             {
-                var seedEnumerator = lineEnumerator.Current[7..].Split().Select(long.Parse).GetEnumerator();
-                while (seedEnumerator.MoveNext())
-                {
-                    long value = seedEnumerator.Current;
-                    seedEnumerator.MoveNext();
-                    long count = seedEnumerator.Current;
-                    yield return new SeedEntry(value, count);
-                }
-            }
-        }
-
-        private static object Calc(List<SeedEntry> seeds, List<Map> maps)
-        {
-            long max = maps[^1].MapData.Select(x => x.Destination + x.Lenght).Max();
-            for (int i = 0; i < max; i++)
-            {
-                long next = i;
-
-                for (int j = maps.Count - 1; j >= 0; j--)
-                {
-                    next = maps[j].GetRevNumber(next);
-                }
-                foreach (var seedEntry in seeds)
-                {
-                    if (seedEntry.Contains(next))
-                    {
-                        return i;
-                    }
-                }
+               Console.WriteLine("{0:P1}", p);
+               nextPrint += 0.001f;
             }
 
-            throw new UnreachableException();
-        }
+            Parallel.For(
+               i,
+               i + blockSize,
+               blockStart =>
+               {
+                  long value = blockStart;
 
-        [GeneratedRegex("^(?<from>.+)-to-(?<to>.+) map:$")]
-        private static partial Regex MapHeaderRx();
-
-        private static List<long> ReadSeeds(string line)
-        {
-            const string startText = "seeds: ";
-            if (!line.StartsWith(startText)) { throw new InvalidOperationException(); }
-
-            ReadOnlySpan<char> span = line.AsSpan();
-
-            return ReadSSV(span[startText.Length..], 20);
-        }
-
-        private static List<long> ReadSSV(ReadOnlySpan<char> span, int expectedCount = 0)
-        {
-            List<long> seeds = new(expectedCount);
-
-            int a = 0;
-            int b = 0;
-            while (b < span.Length)
+                  for(int j = maps.Count - 1; j >= 0; j--)
+                  {
+                     value = maps[j].GetRevNumber(value);
+                  }
+                  foreach(var seedEntry in seeds)
+                  {
+                     if(seedEntry.Contains(value))
+                     {
+                        hasResult = true;
+                        result.Add(blockStart);
+                     }
+                  }
+               });
+            if (hasResult)
             {
-                while (b < span.Length && span[b] != ' ')
-                {
-                    b++;
-                }
+               return result.Min(x => x);
+            }
+         }
 
-                seeds.Add(long.Parse(span[a..b]));
-                a = b + 1;
-                b = a;
+         throw new UnreachableException();
+      }
+
+      [GeneratedRegex("^(?<from>.+)-to-(?<to>.+) map:$")]
+      private static partial Regex MapHeaderRx();
+
+      private static List<long> ReadSSV(ReadOnlySpan<char> span, int expectedCount = 0)
+      {
+         List<long> seeds = new(expectedCount);
+
+         int a = 0;
+         int b = 0;
+         while (b < span.Length)
+         {
+            while (b < span.Length && span[b] != ' ')
+            {
+               b++;
             }
 
-            return seeds;
-        }
+            seeds.Add(long.Parse(span[a..b]));
+            a = b + 1;
+            b = a;
+         }
 
-        private Map ReadMap(IEnumerator<string> lineEnumerator)
-        {
-            var rx = MapHeaderRx().Match(lineEnumerator.Current);
-            var map = new Map(rx.Groups["from"].Value, rx.Groups["to"].Value);
+         return seeds;
+      }
 
-            while (lineEnumerator.MoveNext() && lineEnumerator.Current.Length > 0)
+      private static long SimpleSolution(List<long> seeds, List<Map> maps)
+      {
+         var numbers = new List<long>(seeds);
+         var buffer = new List<long>(numbers.Count);
+
+         foreach (var map in maps)
+         {
+            buffer.AddRange(numbers.Select(map.GetNumber));
+
+            numbers.Clear();
+            numbers.AddRange(buffer);
+            buffer.Clear();
+         }
+
+         return numbers.Min();
+      }
+
+      private Map ReadMap(IEnumerator<string> lineEnumerator)
+      {
+         var rx = MapHeaderRx().Match(lineEnumerator.Current);
+         var map = new Map(rx.Groups["from"].Value, rx.Groups["to"].Value);
+
+         while (lineEnumerator.MoveNext() && lineEnumerator.Current.Length > 0)
+         {
+            var ssv = ReadSSV(lineEnumerator.Current.AsSpan(), 3);
+            map.MapData.Add(new MapData(ssv[1], ssv[0], ssv[2]));
+         }
+
+         return map;
+      }
+
+      private IEnumerable<Map> ReadMaps(IEnumerator<string> lineEnumerator)
+      {
+         while (lineEnumerator.MoveNext())
+         {
+            yield return ReadMap(lineEnumerator);
+         }
+      }
+
+      private class Map(string from, string to)
+      {
+         public string From { get; } = from;
+         public IList<MapData> MapData { get; } = new List<MapData>();
+         public string To { get; } = to;
+
+         public long GetNumber(long number)
+         {
+            foreach (var data in MapData)
             {
-                var ssv = ReadSSV(lineEnumerator.Current.AsSpan(), 3);
-                map.MapData.Add(new MapData(ssv[1], ssv[0], ssv[2]));
+               if (number >= data.Source && number <= data.Source + data.Lenght)
+               {
+                  return number + (data.Destination - data.Source);
+               }
             }
+            return number;
+         }
 
-            return map;
-        }
-
-        private IEnumerable<Map> ReadMaps(IEnumerator<string> lineEnumerator)
-        {
-            while (lineEnumerator.MoveNext())
+         public long GetRevNumber(long number)
+         {
+            foreach (var data in MapData)
             {
-                yield return ReadMap(lineEnumerator);
+               if (number >= data.Destination && number <= data.Destination + data.Lenght)
+               {
+                  return number - (data.Destination - data.Source);
+               }
             }
-        }
+            return number;
+         }
+      }
 
-        private class SeedEntry(long source, long count=1)
-        {
-            public bool Contains(long value)
-            {
-                return value >= source && value < source + count;
-            }
-        }
-        private class Map(string from, string to)
-        {
-            public string From { get; } = from;
-            public IList<MapData> MapData { get; } = new List<MapData>();
-            public string To { get; } = to;
-            
-            public long GetNumber(long number)
-            {
-                foreach (var data in MapData)
-                {
-                    if (number >= data.Source && number <= data.Source + data.Lenght)
-                    {
-                        return (data.Destination - data.Source);
-                    }
-                }
-                return number;
-            }
+      private class SeedEntry(long source, int count = 1)
+      {
+         public int Count { get; } = count;
+         public long Source { get; } = source;
 
-            public long GetRevNumber(long number)
-            {
-                foreach(var data in MapData)
-                {
-                    if(number >= data.Destination && number <= data.Destination + data.Lenght)
-                    {
-                        return number - (data.Destination - data.Source);
-                    }
-                }
-                return number;
-            }
-        }
+         public bool Contains(long value)
+         {
+            return value >= Source && value < Source + Count;
+         }
+      }
 
-        private record struct MapData(long Source, long Destination, long Lenght);
-    }
+      private record struct MapData(long Source, long Destination, long Lenght);
+   }
 }
