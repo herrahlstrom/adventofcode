@@ -1,4 +1,6 @@
 ﻿using AdventOfCode.Helper;
+using System;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode.Puzzles
@@ -6,73 +8,95 @@ namespace AdventOfCode.Puzzles
     [Puzzle(2023, 5, "If You Give A Seed A Fertilizer")]
     public partial class Year2023Day05 : IPuzzle
     {
+        const string FirstStep = "seed";
+        const string LastStep = "location";
+
         public object FirstPart()
         {
             IEnumerator<string> lineEnumerator = InputReader.ReadLines(this).GetEnumerator();
 
-            lineEnumerator.MoveNext();
-            var seeds = ReadSeeds(lineEnumerator.Current);
+            //lineEnumerator.MoveNext();
+            //List<SeedEntry> numbers = lineEnumerator.Current[7..].Split()
+            //                                                     .Select(x => new SeedEntry(long.Parse(x)))
+            //                                                     .ToList();
+
+            //lineEnumerator.MoveNext();
+            //Dictionary<string, Map> maps = ReadMaps(lineEnumerator).ToDictionary(x => x.From, x => x);
+
+            //var buffer = new List<long>(numbers.Count);
+            //string step = FirstStep;
+            //while (step != LastStep)
+            //{
+            //    var map = maps[step];
+            //    buffer.AddRange(numbers.Select(map.GetNumber));
+
+            //    numbers.Clear();
+            //    numbers.AddRange(buffer);
+            //    buffer.Clear();
+
+            //    step = map.To;
+            //}
+
+            //return numbers.Min();
 
             lineEnumerator.MoveNext();
-            Dictionary<string, Map> maps = ReadMaps(lineEnumerator).ToDictionary(x => x.From, x => x);
+            List<SeedEntry> seeds = lineEnumerator.Current[7..].Split()
+                                                               .Select(x => new SeedEntry(long.Parse(x)))
+                                                               .ToList();
+
+            lineEnumerator.MoveNext();
+            List<Map> maps = ReadMaps(lineEnumerator).ToList();
 
             return Calc(seeds, maps);
         }
 
         public object SecondPart()
         {
+            throw new NotImplementedException();
             IEnumerator<string> lineEnumerator = InputReader.ReadLines(this).GetEnumerator();
 
             lineEnumerator.MoveNext();
-            var seeds = ReadSeeds(lineEnumerator.Current);
+            List<SeedEntry> seeds = ReadSeeds(lineEnumerator.Current).ToList();
 
             lineEnumerator.MoveNext();
-            Dictionary<string, Map> maps = ReadMaps(lineEnumerator).ToDictionary(x => x.From, x => x);
+            List<Map> maps = ReadMaps(lineEnumerator).ToList();
+            
+            return Calc(seeds, maps);
 
-            return Calc(GetSeeds(seeds), maps);
-
-            IEnumerable<long> GetSeeds(List<long> seedsInput)
+            IEnumerable<SeedEntry> ReadSeeds(string line)
             {
-                var enumerator = seedsInput.GetEnumerator();
-                while (enumerator.MoveNext())
+                var seedEnumerator = lineEnumerator.Current[7..].Split().Select(long.Parse).GetEnumerator();
+                while (seedEnumerator.MoveNext())
                 {
-                    long n = enumerator.Current;
-                    enumerator.MoveNext();
-                    var count = enumerator.Current;
-
-                    while (count > 0)
-                    {
-                        yield return n;
-                        n++;
-                        count--;
-                    }
+                    long value = seedEnumerator.Current;
+                    seedEnumerator.MoveNext();
+                    long count = seedEnumerator.Current;
+                    yield return new SeedEntry(value, count);
                 }
             }
         }
 
-        private static object Calc(IEnumerable<long> input, Dictionary<string, Map> maps)
+        private static object Calc(List<SeedEntry> seeds, List<Map> maps)
         {
-            List<long> numbers = input.ToList();
-
-            Console.WriteLine("Start process {0} seeds", numbers.Count);
-
-            var buffer = new List<long>(numbers.Count);
-            string step = "seed";
-            while (step != "location")
+            long max = maps[^1].MapData.Select(x => x.Destination + x.Lenght).Max();
+            for (int i = 0; i < max; i++)
             {
-                Console.WriteLine(step);
+                long next = i;
 
-                var map = maps[step];
-                buffer.AddRange(numbers.Select(map.GetNumber));
-
-                numbers.Clear();
-                numbers.AddRange(buffer);
-                buffer.Clear();
-
-                step = map.To;
+                for (int j = maps.Count - 1; j >= 0; j--)
+                {
+                    next = maps[j].GetRevNumber(next);
+                }
+                foreach (var seedEntry in seeds)
+                {
+                    if (seedEntry.Contains(next))
+                    {
+                        return i;
+                    }
+                }
             }
 
-            return numbers.Min();
+            throw new UnreachableException();
         }
 
         [GeneratedRegex("^(?<from>.+)-to-(?<to>.+) map:$")]
@@ -131,20 +155,38 @@ namespace AdventOfCode.Puzzles
             }
         }
 
+        private class SeedEntry(long source, long count=1)
+        {
+            public bool Contains(long value)
+            {
+                return value >= source && value < source + count;
+            }
+        }
         private class Map(string from, string to)
         {
             public string From { get; } = from;
             public IList<MapData> MapData { get; } = new List<MapData>();
             public string To { get; } = to;
-
+            
             public long GetNumber(long number)
             {
                 foreach (var data in MapData)
                 {
                     if (number >= data.Source && number <= data.Source + data.Lenght)
                     {
-                        number += (data.Destination - data.Source);
-                        return number;
+                        return (data.Destination - data.Source);
+                    }
+                }
+                return number;
+            }
+
+            public long GetRevNumber(long number)
+            {
+                foreach(var data in MapData)
+                {
+                    if(number >= data.Destination && number <= data.Destination + data.Lenght)
+                    {
+                        return number - (data.Destination - data.Source);
                     }
                 }
                 return number;
