@@ -7,7 +7,7 @@ namespace AdventOfCode.Puzzles._2023
    [Puzzle(2023, 6, "Wait For It")]
    internal class Year2023Day06 : IPuzzle
    {
-      [Answer(140220)]
+      [Answer(140220L)]
       public object FirstPart()
       {
          var input = InputReader.ReadAllLines(this);

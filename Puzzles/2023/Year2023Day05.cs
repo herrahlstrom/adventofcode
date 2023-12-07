@@ -23,7 +23,7 @@ namespace AdventOfCode.Puzzles
          return SimpleSolution(seeds, maps);
       }
 
-      [Answer(99751240)]
+      [Answer(99751240L)]
       public object SecondPart()
       {
          IEnumerator<string> lineEnumerator = InputReader.ReadLines(this).GetEnumerator();
