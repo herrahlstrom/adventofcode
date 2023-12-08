@@ -5,6 +5,7 @@ namespace AdventOfCode.Puzzles;
 [Puzzle(2023, 1, "Trebuchet?!")]
 public class Year2023Day01 : IPuzzle
 {
+    [Answer(55123L)]
    public object FirstPart()
    {
       long sum = 0;
@@ -19,6 +20,7 @@ public class Year2023Day01 : IPuzzle
       return sum;
    }
 
+    [Answer(55260L)]
    public object SecondPart()
    {
       long sum = 0;

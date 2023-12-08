@@ -5,6 +5,7 @@ namespace AdventOfCode.Puzzles;
 [Puzzle(2023, 3, "Gear Ratios")]
 public class Year2023Day03 : IPuzzle
 {
+    [Answer(539433)]
     public object FirstPart()
     {
         string[] lines = InputReader.ReadAllLines(this);
@@ -12,6 +13,7 @@ public class Year2023Day03 : IPuzzle
         return Search(lines, c => c != '.' && !char.IsNumber(c), p => GetNeighbourValues(lines, p).Sum()).Sum();
     }
 
+    [Answer(75847567)]
     public object SecondPart()
     {
         string[] lines = InputReader.ReadAllLines(this);

@@ -6,6 +6,7 @@ namespace AdventOfCode.Puzzles;
 [Puzzle(2023, 2, "Cube Conundrum")]
 public class Year2023Day02 : IPuzzle
 {
+    [Answer(2617)]
     public object FirstPart()
     {
         const int MaxRed = 12;
@@ -18,6 +19,7 @@ public class Year2023Day02 : IPuzzle
                           .Sum(game => game.Id);
     }
 
+    [Answer(59795L)]
     public object SecondPart()
     {
         long sum = 0;
