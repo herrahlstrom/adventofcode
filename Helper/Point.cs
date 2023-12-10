@@ -35,4 +35,8 @@ internal struct Point(int x, int y)
     public readonly Point MoveRight() => this + Right;
 
     public readonly Point MoveUp() => this + Up;
+    public override string ToString()
+    {
+        return $"{{{X},{Y}}}";
+    }
 }
