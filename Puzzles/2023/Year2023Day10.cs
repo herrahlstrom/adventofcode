@@ -26,26 +26,41 @@ public class Year2023Day10 : IPuzzle
         HashSet<Point> path = GetPath(map).ToHashSet();
 
         int count = 0;
+        Dictionary<Point, int> cache = [];
+        Point moveDirection = Point.Left + Point.Up;
+        int cacheCounter = 0;
 
-        foreach (var p in GetPoints(map).Where(p => !path.Contains(p)))
+        foreach(var p in GetPoints(map).Where(p => !path.Contains(p)))
         {
             int rayPathCounter = 0;
 
-            var mp = p.MoveLeft().MoveUp();
-            while (InMap(map, mp))
+            var mp = p + moveDirection;
+            while(InMap(map, mp))
             {
-                if (path.Contains(mp) && map[mp.X, mp.Y] != 'L' && map[mp.X, mp.Y] != '7')
+                if(cache.TryGetValue(mp, out int cachedValue))
                 {
-                    rayPathCounter++;
+                    rayPathCounter += cachedValue;
+                    break;
                 }
-                mp = mp.MoveLeft().MoveUp();
+                else
+                {
+                    if(path.Contains(mp) && map[mp.X, mp.Y] != 'L' && map[mp.X, mp.Y] != '7')
+                    {
+                        rayPathCounter++;
+                    }
+                    mp += moveDirection;
+                }
             }
 
-            if (rayPathCounter % 2 == 1)
+            if(rayPathCounter % 2 == 1)
             {
                 count++;
             }
+
+            cache[p] = rayPathCounter;
         }
+
+        Console.WriteLine("Cache count: "+cacheCounter);
 
         return count;
     }
@@ -97,46 +112,6 @@ public class Year2023Day10 : IPuzzle
             }
         }
         return null;
-    }
-
-    private static IEnumerable<Point> GetEdges(char[,] map)
-    {
-        // Top (Left to right)
-        for (int x = 0, y = 0; x < map.GetLength(0) - 1; x++)
-        {
-            if (map[x, y] == '.')
-            {
-                yield return new Point(x, y);
-            }
-        }
-
-        // Right (Top to bottom)
-        for (int x = map.GetLength(0) - 1, y = 0; y < map.GetLength(1) - 1; y++)
-        {
-            if (map[x, y] == '.')
-            {
-                yield return new Point(x, y);
-            }
-        }
-
-        // Bottom (Right to left)
-        for (int x = map.GetLength(0) - 1, y = map.GetLength(1) - 1; x > 0; x--)
-        {
-            if (map[x, y] == '.')
-            {
-                yield return new Point(x, y);
-            }
-        }
-
-        // Left (bottom to top)
-        for (int x = 0, y = map.GetLength(1) - 1; y > 0; y--)
-        {
-            if (map[x, y] == '.')
-            {
-                yield return new Point(x, y);
-            }
-        }
-
     }
 
     private static IEnumerable<Point> GetPoints(char[,] map)
