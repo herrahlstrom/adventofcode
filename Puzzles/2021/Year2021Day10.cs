@@ -1,6 +1,6 @@
 ﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2021;
 
 [Puzzle(2021, 10, "Syntax Scoring")]
 internal class Year2021Day10 : IPuzzle

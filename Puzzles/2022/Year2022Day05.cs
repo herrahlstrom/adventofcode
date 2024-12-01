@@ -1,7 +1,7 @@
-using AdventOfCode.Helper;
 using System.Text.RegularExpressions;
+using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2022;
 
 [Puzzle(2022, 5, "Supply Stacks")]
 internal partial class Year2022Day05 : IPuzzle

@@ -1,12 +1,9 @@
-﻿using AdventOfCode.Helper;
-using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Numerics;
 using System.Text.RegularExpressions;
+using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2022;
 
 [Puzzle(2022, 11, "Monkey in the Middle")]
 internal class Year2022Day11 : IPuzzle

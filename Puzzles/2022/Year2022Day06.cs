@@ -1,6 +1,6 @@
 ﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2022;
 
 [Puzzle(2022, 6, "Tuning Trouble")]
 internal class Year2022Day06 : IPuzzle

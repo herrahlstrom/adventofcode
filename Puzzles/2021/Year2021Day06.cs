@@ -1,6 +1,6 @@
 ﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2021;
 
 [Puzzle(2021, 6, "Lanternfish")]
 internal class Year2021Day06 : IPuzzle

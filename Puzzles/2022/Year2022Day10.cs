@@ -1,7 +1,7 @@
-﻿using AdventOfCode.Helper;
-using System.Reflection;
+﻿using System.Reflection;
+using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2022;
 
 [Puzzle(2022, 10, "Cathode-Ray Tube")]
 internal class Year2022Day10 : IPuzzle

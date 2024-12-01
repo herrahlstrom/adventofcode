@@ -1,8 +1,6 @@
 ﻿using AdventOfCode.Helper;
-using System;
-using System.Linq;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2022;
 
 [Puzzle(2022, 8, "Treetop Tree House")]
 internal class Year2022Day08 : IPuzzle

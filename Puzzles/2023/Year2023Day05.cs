@@ -1,8 +1,7 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles
+namespace AdventOfCode.Puzzles._2023
 {
    [Puzzle(2023, 5, "If You Give A Seed A Fertilizer")]
    public partial class Year2023Day05 : IPuzzle

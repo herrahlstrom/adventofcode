@@ -1,6 +1,6 @@
 ﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2023;
 
 [Puzzle(2023, 3, "Gear Ratios")]
 public class Year2023Day03 : IPuzzle

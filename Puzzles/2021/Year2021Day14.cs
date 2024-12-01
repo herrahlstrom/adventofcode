@@ -1,6 +1,6 @@
 ﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2021;
 
 [Puzzle(2021, 14, "Extended Polymerization")]
 internal class Year2021Day14 : IPuzzle

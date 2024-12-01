@@ -1,9 +1,8 @@
-﻿using AdventOfCode.Helper;
-using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
+using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2022;
 
 [Puzzle(2022, 13, "Distress Signal")]
 internal class Year2022Day13 : IPuzzle

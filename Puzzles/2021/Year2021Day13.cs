@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2021;
 
 [Puzzle(2021, 13, "Transparent Origami", PrintToConsole = true)]
 internal class Year2021Day13 : IPuzzle

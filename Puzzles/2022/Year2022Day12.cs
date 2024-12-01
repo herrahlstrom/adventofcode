@@ -1,9 +1,7 @@
-﻿using AdventOfCode.Helper;
-using System;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
+using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2022;
 
 [Puzzle(2022, 12, "Hill Climbing Algorithm")]
 internal class Year2022Day12 : IPuzzle

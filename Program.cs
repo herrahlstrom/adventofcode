@@ -19,6 +19,7 @@ public class Program
               / ___ \ (_| |\ V /  __/ | | | |_  | (_) |  _| | |__| (_) | (_| |  __/
              /_/   \_\__,_| \_/ \___|_| |_|\__|  \___/|_|    \____\___/ \__,_|\___|
             """);
+        Console.WriteLine();
 
         var puzzles = GetPuzzles(arguments);
         ConcurrentBag<PuzzleResult> result = [];

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Linq;
-using AdventOfCode.Helper;
+﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2023;
 
 [Puzzle(2023, 10, "Pipe Maze")]
 public class Year2023Day10 : IPuzzle
@@ -28,7 +26,6 @@ public class Year2023Day10 : IPuzzle
         int count = 0;
         Dictionary<Point, int> cache = [];
         Point moveDirection = Point.Left + Point.Up;
-        int cacheCounter = 0;
 
         foreach(var p in GetPoints(map).Where(p => !path.Contains(p)))
         {
@@ -59,9 +56,7 @@ public class Year2023Day10 : IPuzzle
 
             cache[p] = rayPathCounter;
         }
-
-        Console.WriteLine("Cache count: "+cacheCounter);
-
+        
         return count;
     }
 

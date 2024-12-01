@@ -2,7 +2,7 @@
 using System.Text;
 using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2021;
 
 [Puzzle(2021, 16, "Packet Decoder")]
 internal class Year2021Day16 : IPuzzle

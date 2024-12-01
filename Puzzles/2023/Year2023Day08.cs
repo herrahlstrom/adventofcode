@@ -1,7 +1,6 @@
-﻿using System;
-using AdventOfCode.Helper;
+﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2023;
 
 using Map = Dictionary<string, (string, string)>;
 

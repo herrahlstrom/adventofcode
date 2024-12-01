@@ -1,7 +1,7 @@
-﻿using AdventOfCode.Helper;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2022;
 
 [Puzzle(2022, 3, "Rucksack Reorganization")]
 internal class Year2022Day03 : IPuzzle

@@ -1,7 +1,6 @@
-﻿using System;
-using AdventOfCode.Helper;
+﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2023;
 
 [Puzzle(2023, 2, "Cube Conundrum")]
 public class Year2023Day02 : IPuzzle

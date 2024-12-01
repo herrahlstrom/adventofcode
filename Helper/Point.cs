@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace AdventOfCode;
+namespace AdventOfCode.Helper;
 
 [DebuggerDisplay("{X},{Y}")]
 internal struct Point(int x, int y)

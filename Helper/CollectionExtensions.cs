@@ -1,4 +1,4 @@
-﻿namespace AdventOfCode;
+﻿namespace AdventOfCode.Helper;
 
 internal static class CollectionExtensions
 {

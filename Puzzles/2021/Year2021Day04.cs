@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2021;
 
 [Puzzle(2021, 4, "Giant Squid")]
 internal class Year2021Day04 : IPuzzle

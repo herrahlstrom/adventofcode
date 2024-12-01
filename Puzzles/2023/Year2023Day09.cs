@@ -1,7 +1,6 @@
-﻿using System;
-using AdventOfCode.Helper;
+﻿using AdventOfCode.Helper;
 
-namespace AdventOfCode.Puzzles;
+namespace AdventOfCode.Puzzles._2023;
 
 [Puzzle(2023, 9, "Mirage Maintenance")]
 public class Year2023Day09 : IPuzzle
