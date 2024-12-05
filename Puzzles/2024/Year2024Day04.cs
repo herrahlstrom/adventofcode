@@ -32,6 +32,7 @@ internal class Year2024Day04 : IPuzzle
         return counter;
     }
 
+    [Answer(2034)]
     public object SecondPart()
     {
         char[,] map = InputReader.ReadMap(this);
