@@ -1,20 +1,12 @@
 ﻿using System.Diagnostics;
 using AdventOfCode.Helper;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace AdventOfCode.Puzzles._2024;
 
 [Puzzle(2024, 6, "Guard Gallivant")]
 internal class Year2024Day06 : IPuzzle
 {
-    private const char UpSign = '^';
-    private const char RightSign = '>';
-    private const char LeftSign = '<';
-    private const char DownSign = 'v';
-    private static readonly Point Up = new Point(0, -1);
-    private static readonly Point Down = new Point(0, 1);
-    private static readonly Point Left = new Point(-1, 0);
-    private static readonly Point Right = new Point(1, 0);
+    private static readonly Point[] Directions = [new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0)];
 
     [Answer(4776)]
     public object FirstPart()
@@ -22,26 +14,7 @@ internal class Year2024Day06 : IPuzzle
         char[,] map = InputReader.ReadMap(this);
         Point guard = FindGuard(map);
 
-        HashSet<Point> visited = [];
-
-        while (true)
-        {
-            Point next = guard + GetDirection(map, guard);
-            if (!OnMap(map, next)) break;
-
-            if (map[next.X, next.Y] == '#')
-            {
-                map[guard.X, guard.Y] = TurnRight(map, guard);
-                continue;
-            }
-
-            map[next.X, next.Y] = map[guard.X, guard.Y];
-
-            guard = next;
-            visited.Add(next);
-        }
-
-        return visited.Count;
+        return GetPathOut(map, guard).Distinct().Count();
     }
 
     [Answer(1586)]
@@ -50,47 +23,48 @@ internal class Year2024Day06 : IPuzzle
         char[,] map = InputReader.ReadMap(this);
         Point guardOrig = FindGuard(map);
 
+        var candidates = GetPathOut(map, guardOrig).ToHashSet();
+        candidates.Remove(guardOrig);
+
+        HashSet<(Point, Point)> visited = [];
+
         int result = 0;
-        for (int obstX = 0; obstX < map.GetLength(0); obstX++)
+        foreach (Point p in candidates)
         {
-            for (int obstY = 0; obstY < map.GetLength(1); obstY++)
+            map[p.X, p.Y] = '#';
+
+            Point guard = guardOrig;
+            int direction = 0;
+
+            bool inLoop = false;
+
+            visited.Clear();
+            while (true)
             {
-                if (map[obstX, obstY] == '#' || (guardOrig.X == obstX && guardOrig.Y == obstY))
-                    continue;
+                Point next = guard + Directions[direction];
+                if (!OnMap(map, next)) break;
 
-                map[guardOrig.X, guardOrig.Y] = UpSign;
-                Point guard = guardOrig;
-                HashSet<Vector> visited = [];
-                bool inLoop = false;
-
-                while (true)
+                if (map[next.X, next.Y] == '#')
                 {
-                    Point direction = GetDirection(map, guard);
-                    Point next = guard + direction;
-                    if (!OnMap(map, next)) break;
-
-                    if (map[next.X, next.Y] == '#' || (next.X == obstX && next.Y == obstY))
-                    {
-                        map[guard.X, guard.Y] = TurnRight(map, guard);
-                        continue;
-                    }
-
-                    map[next.X, next.Y] = map[guard.X, guard.Y];
-
-                    guard = next;
-
-                    var v = new Vector(next, direction);
-
-                    if (!visited.Add(v))
-                    {
-                        inLoop = true;
-                        break;
-                    }
+                    TurnRight(ref direction);
+                    continue;
                 }
 
-                if (inLoop)
-                    result++;
+                guard = next;
+
+                if (visited.Add((next, Directions[direction])))
+                {
+                    continue;
+                }
+
+                inLoop = true;
+                break;
             }
+
+            if (inLoop)
+                result++;
+
+            map[p.X, p.Y] = '.';
         }
 
         return result;
@@ -112,16 +86,24 @@ internal class Year2024Day06 : IPuzzle
         throw new UnreachableException("The guard is not reachable.");
     }
 
-    private Point GetDirection(char[,] map, Point guard)
+    private IEnumerable<Point> GetPathOut(char[,] map, Point guard)
     {
-        return map[guard.X, guard.Y] switch
+        int direction = 0;
+
+        while (true)
         {
-            UpSign => Up,
-            RightSign => Right,
-            LeftSign => Left,
-            DownSign => Down,
-            _ => throw new UnreachableException($"Invalid direction of guard; ({guard.X},{guard.Y}) '{map[guard.X, guard.Y]}'.")
-        };
+            Point next = guard + Directions[direction];
+            if (!OnMap(map, next)) break;
+
+            if (map[next.X, next.Y] == '#')
+            {
+                TurnRight(ref direction);
+                continue;
+            }
+
+            guard = next;
+            yield return next;
+        }
     }
 
     private static bool OnMap(char[,] map, Point point)
@@ -132,22 +114,15 @@ internal class Year2024Day06 : IPuzzle
                point.Y < map.GetLength(1);
     }
 
-    private char TurnRight(char[,] map, Point current)
+    private static void TurnRight(ref int direction)
     {
-        return map[current.X, current.Y] switch
-        {
-            UpSign => RightSign,
-            RightSign => DownSign,
-            LeftSign => UpSign,
-            DownSign => LeftSign,
-            _ => throw new UnreachableException("Invalid direction of guard.")
-        };
+        direction++;
+        if (direction >= Directions.Length)
+            direction = 0;
     }
 
     private record struct Point(int X, int Y)
     {
         public static Point operator +(Point a, Point b) => new Point(a.X + b.X, a.Y + b.Y);
     }
-
-    private record struct Vector(Point Point, Point Direction);
 }
