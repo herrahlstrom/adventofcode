@@ -149,6 +149,7 @@ public class Program
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return ex.GetType().Name;
             }
         }
