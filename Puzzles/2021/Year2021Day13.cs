@@ -4,7 +4,7 @@ using AdventOfCode.Helper;
 
 namespace AdventOfCode.Puzzles._2021;
 
-[Puzzle(2021, 13, "Transparent Origami", PrintToConsole = true)]
+[Puzzle(2021, 13, "Transparent Origami")]
 internal class Year2021Day13 : IPuzzle
 {
     private readonly List<FoldInstruction> _foldInstructions = new();

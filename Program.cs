@@ -1,7 +1,5 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using ConsoleTables;
 
 namespace AdventOfCode;
@@ -10,150 +8,80 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        Arguments arguments = GetArguments(args);
-
         Console.WriteLine("""
-                 _       _                 _            __    ____          _      
-                / \   __| |_   _____ _ __ | |_    ___  / _|  / ___|___   __| | ___ 
-               / _ \ / _` \ \ / / _ \ '_ \| __|  / _ \| |_  | |   / _ \ / _` |/ _ \
-              / ___ \ (_| |\ V /  __/ | | | |_  | (_) |  _| | |__| (_) | (_| |  __/
-             /_/   \_\__,_| \_/ \___|_| |_|\__|  \___/|_|    \____\___/ \__,_|\___|
-            """);
+                               _       _                 _            __    ____          _      
+                              / \   __| |_   _____ _ __ | |_    ___  / _|  / ___|___   __| | ___ 
+                             / _ \ / _` | \ / / _ \ '_ \| __|  / _ \| |_  | |   / _ \ / _` |/ _ \
+                            / ___ \ (_| |\ V /  __/ | | | |_  | (_) |  _| | |__| (_) | (_| |  __/
+                           /_/   \_\__,_| \_/ \___|_| |_|\__|  \___/|_|    \____\___/ \__,_|\___|
+                          """);
         Console.WriteLine();
 
-        var puzzles = GetPuzzles(arguments);
-        ConcurrentBag<PuzzleResult> result = [];
+        var puzzles =
+            from t in typeof(IPuzzle).Assembly.GetTypes()
+            where t.IsClass && typeof(IPuzzle).IsAssignableFrom(t)
+            let puzzle = t.GetCustomAttribute<PuzzleAttribute>()
+            where puzzle != null
+            select new { puzzle.Year, puzzle.Day, PuzzleType = t };
+
+        puzzles = args.Length switch
+        {
+            0 => puzzles.Where(x => x.Year == DateTime.Now.Year),
+            1 => puzzles.Where(x => x.Year == int.Parse(args[0])),
+            2 => puzzles.Where(x => x.Year == int.Parse(args[0])).Where(x => x.Day == int.Parse(args[1])),
+            _ => puzzles.Where(_ => false)
+        };
+
+        const int resultSize = 15;
+        var resultTable = new ConsoleTable("YEAR", "DAY", "PUZZLE", "FIRST".PadLeft(resultSize), "SECOND".PadLeft(resultSize), "  ELAPSED");
 
         var start = Stopwatch.GetTimestamp();
-        Parallel.ForEach(
-           puzzles,
-           new ParallelOptions() { MaxDegreeOfParallelism = 4 },
-           day => result.Add(SolvePuzzle(day)));
+        foreach (var puzzle in puzzles.Select(x => x.PuzzleType).Select(Activator.CreateInstance).OfType<IPuzzle>())
+        {
+            var puzzleType = puzzle.GetType();
+            var puzzleAttribute = puzzleType.GetCustomAttribute<PuzzleAttribute>()!;
+
+            var puzzleStart = Stopwatch.GetTimestamp();
+            var firstResult = GetPuzzleValue(puzzleType, puzzle.FirstPart, nameof(puzzle.FirstPart));
+            var secondResult = GetPuzzleValue(puzzleType, puzzle.SecondPart, nameof(puzzle.SecondPart));
+            var puzzleElapsedTime = Stopwatch.GetElapsedTime(puzzleStart);
+
+            resultTable.AddRow(
+                $"{puzzleAttribute.Year}",
+                $"{puzzleAttribute.Day,3}",
+                $"{puzzleAttribute.Name}",
+                $"{firstResult,resultSize}",
+                $"{secondResult,resultSize}",
+                $"{puzzleElapsedTime.TotalMilliseconds,7:N1} ms");
+        }
+
         var elapsedTime = Stopwatch.GetElapsedTime(start);
 
-        PrintResultTable(result);
+        resultTable.Write();
 
         Console.WriteLine(" Elapsed: {0:N1} ms", elapsedTime.TotalMilliseconds);
     }
 
-    private static Arguments GetArguments(string[] args)
+    private static object GetPuzzleValue(Type puzzleType, Func<object> method, string methodName)
     {
-        var arguments = new CommandLine.Parser().ParseArguments<Arguments>(args);
-
-        if (arguments.Errors.FirstOrDefault() is { } argParseError)
-        {
-            throw new ArgumentException(argParseError.ToString());
-        }
-
-        return arguments.Value;
-    }
-
-    private static IEnumerable<IPuzzle> GetPuzzles(Arguments arguments)
-    {
-        var puzzles = (from t in typeof(IPuzzle).Assembly.GetTypes()
-                       where t.IsClass && typeof(IPuzzle).IsAssignableFrom(t)
-                       let puzzle = t.GetCustomAttribute<PuzzleAttribute>()
-                       where puzzle != null
-                       select new { puzzle.Year, puzzle.Day, PuzzleType = t }).ToList();
-
-        int year;
-        int? day;
-        if (arguments.Latest)
-        {
-            year = puzzles.Max(x => x.Year);
-            day = puzzles.Where(x => x.Year == year).Max(x => x.Day);
-        }
-        else
-        {
-            year = arguments.Year ?? puzzles.Max(x => x.Year);
-            day = arguments.Day;
-        }
-
-        return puzzles.Where(x => x.Year == year)
-                      .Where(x => day == null || x.Day == day)
-                      .Select(x => x.PuzzleType)
-                      .Select(Activator.CreateInstance)
-                      .OfType<IPuzzle>();
-    }
-
-    private static void PrintResultTable(ConcurrentBag<PuzzleResult> result)
-    {
-        const int ResultSize = 15;
-
-        var resultTable = new ConsoleTable("   PUZZLE", "FIRST".PadLeft(ResultSize), "SECOND".PadLeft(ResultSize), "  ELAPSED");
-        foreach (var puzzleResult in result.OrderBy(x => x.Year).ThenBy(x => x.Day))
-        {
-            resultTable.AddRow(
-               $"{puzzleResult.Day,2} {puzzleResult.Name}",
-               $"{puzzleResult.FirstResult,ResultSize}",
-               $"{puzzleResult.SecondResult,ResultSize}",
-               $"{puzzleResult.Elapsed.TotalMilliseconds,7:N1} ms");
-        }
-        resultTable.Write();
-    }
-
-    private static readonly SemaphoreSlim s_singleRunSemaphore = new(1);
-
-    private static PuzzleResult SolvePuzzle(IPuzzle day)
-    {
-        var puzzleType = day.GetType();
-        PuzzleAttribute puzzleAttribute = puzzleType.GetCustomAttribute<PuzzleAttribute>()!;
-
-        bool locked = false;
-        if (puzzleAttribute.PrintToConsole)
-        {
-            s_singleRunSemaphore.Wait();
-            locked = true;
-        }
+        var expectedAnswer = puzzleType.GetMethod(methodName)?.GetCustomAttribute<AnswerAttribute>()?.Value;
 
         try
         {
-            var puzzleStart = Stopwatch.GetTimestamp();
-            object firstResult = GetValue(day.FirstPart);
-            object secondResult = GetValue(day.SecondPart);
-            TimeSpan puzzleElapsedTime = Stopwatch.GetElapsedTime(puzzleStart);
+            var answer = method.Invoke();
+            if (expectedAnswer != null && !expectedAnswer.Equals(answer))
+                return $"{answer} (Expected: {expectedAnswer})";
 
-            return new PuzzleResult(puzzleAttribute.Year, puzzleAttribute.Day, puzzleAttribute.Name, firstResult, secondResult, puzzleElapsedTime);
+            return answer;
         }
-        finally
+        catch (NotImplementedException)
         {
-            if (locked)
-            {
-                s_singleRunSemaphore.Release();
-            }
+            return "";
         }
-
-        object GetValue(Func<object> method, [CallerArgumentExpression(nameof(method))] string? callerArgument = null)
+        catch (Exception ex)
         {
-            object? expectedAnswer = null;
-            if (callerArgument != null)
-            {
-                string methodName = callerArgument.Substring(callerArgument.LastIndexOf('.') + 1);
-                var expectedAnswerAttribute = puzzleType.GetMethod(methodName)?.GetCustomAttribute<AnswerAttribute>();
-                expectedAnswer = expectedAnswerAttribute?.Value;
-            }
-
-            try
-            {
-                var answer = method.Invoke();
-                if (expectedAnswer != null && !expectedAnswer.Equals(answer))
-                {
-                    return $"{answer} (Expected: {expectedAnswer})";
-                }
-
-                return answer;
-            }
-            catch (NotImplementedException)
-            {
-                return "";
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return ex.GetType().Name;
-            }
+            Console.WriteLine(ex.Message);
+            return ex.GetType().Name;
         }
     }
-
-    private record PuzzleResult(int Year, int Day, string Name, object? FirstResult, object? SecondResult, TimeSpan Elapsed);
 }

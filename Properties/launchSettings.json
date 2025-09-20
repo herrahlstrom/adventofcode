@@ -1,12 +1,20 @@
 {
   "profiles": {
-    "default": {
+    "Year 2021": {
       "commandName": "Project",
-      "commandLineArgs": ""
+      "commandLineArgs": "2021"
     },
-    "latest-puzzle": {
+    "Year 2022": {
       "commandName": "Project",
-      "commandLineArgs": "--latest"
+      "commandLineArgs": "2022"
+    },
+    "Year 2023": {
+      "commandName": "Project",
+      "commandLineArgs": "2023"
+    },
+    "Year 2024": {
+      "commandName": "Project",
+      "commandLineArgs": "2024"
     }
   }
 }

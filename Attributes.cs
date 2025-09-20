@@ -1,34 +1,17 @@
-﻿using System;
-using System.Linq;
-
-namespace AdventOfCode;
+﻿namespace AdventOfCode;
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class AnswerAttribute : Attribute
+internal class AnswerAttribute(object value) : Attribute
 {
-   public AnswerAttribute(object value)
-   {
-      Value = value;
-   }
-
-   public object Value { get; }
+    public object Value { get; } = value;
 }
 
 [AttributeUsage(AttributeTargets.Class)]
-internal class PuzzleAttribute : Attribute
+internal class PuzzleAttribute(int year, int day, string name) : Attribute
 {
-   public PuzzleAttribute(int year, int day, string name)
-   {
-      Name = name;
-      Year = year;
-      Day = day;
-   }
+    public int Day { get; } = day;
 
-   public int Day { get; }
+    public string Name { get; } = name;
 
-   public string Name { get; }
-
-   public bool PrintToConsole { get; set; }
-
-   public int Year { get; }
+    public int Year { get; } = year;
 }

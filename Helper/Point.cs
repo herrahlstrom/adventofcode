@@ -3,9 +3,8 @@
 namespace AdventOfCode.Helper;
 
 [DebuggerDisplay("{X},{Y}")]
-internal struct Point(int x, int y)
+internal readonly struct Point(int x, int y)
 {
-
     public static readonly Point Up = new(0, -1);
     public static readonly Point Right = new(1, 0);
     public static readonly Point Down = new(0, 1);
